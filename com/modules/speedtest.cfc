@@ -44,7 +44,7 @@
     
     
 	<!--- Saves Speed Test From Specific Unit --->	
- 	<cffunction name="saveDevice" access="remote" output="no" returntype="any" hint="Saves Speed Test Data">
+ 	<cffunction name="saveDevice" access="remote" output="no" returntype="any" hint="Saves Speed Test Device">
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
 
@@ -69,12 +69,12 @@
 
 
 	<!--- Saves Speed Test From Specific Unit --->	
- 	<cffunction name="removeDevice" access="remote" output="no" returntype="any" hint="Saves Speed Test Data">
+ 	<cffunction name="removeDevice" access="remote" output="no" returntype="any" hint="Removes Speed Test Device">
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
 
         <cfquery name="device" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
-		SELECT * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.mac#">
+		DELETE * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.mac#">
 		</cfquery>
 
        
@@ -82,11 +82,11 @@
 			<cfswitch expression="#arguments.output#">
 				<cfcase value="xml">
 				<cfcontent type="text/xml">
-				<cfreturn this.ajaxdata.returnSuccessXML(data.device_id) />	
+				<cfreturn this.ajaxdata.returnSuccessXML(1) />	
 				</cfcase>
 				<cfcase value="json">
 				<cfcontent type="text/html">
-				<cfreturn this.ajaxdata.returnSuccessJSON(data.device_id) />				
+				<cfreturn this.ajaxdata.returnSuccessJSON(1) />				
 				</cfcase>		
 			</cfswitch>
 
