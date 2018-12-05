@@ -31,9 +31,9 @@
 		output="false"
 		hint="Fires when the application is first created.">
         <cfset application.db = structnew()>
-        <cfset application.db.source ="speedtest">
-        <cfset application.db.user = "raspeed">
-        <cfset application.db.pass = "Tp=pX7tK*b">
+        <cfset application.db.source ="xxx">
+        <cfset application.db.user = "xxx">
+        <cfset application.db.pass = "xxx">
 
         <cfset application.DataMgr = CreateObject("component", "com.datamgr.DataMgr").init(application.db.source, "MYSQL", application.db.user, application.db.pass)>
 			<cfreturn true />
