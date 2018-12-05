@@ -27,21 +27,70 @@
 
 		<cfswitch expression="#arguments.output#">
 			<cfcase value="query">
-			<cfreturn tests />
+			<cfreturn device />
 			</cfcase>
 			<cfcase value="xml">
-			<cfset this.ajaxdata.init(tests)>
+			<cfset this.ajaxdata.init(device)>
 			<cfcontent type="text/xml">
 			<cfreturn this.ajaxdata.returnXML() />
 			</cfcase>
 			<cfcase value="json">
-			<cfset this.ajaxdata.init(tests)>
+			<cfset this.ajaxdata.init(device)>
 			<cfcontent type="text/html">
 			<cfreturn this.ajaxdata.returnJSON() />				
 			</cfcase>
 		</cfswitch>	
 	</cffunction>  
+    
+    
+	<!--- Saves Speed Test From Specific Unit --->	
+ 	<cffunction name="saveDevice" access="remote" output="no" returntype="any" hint="Saves Speed Test Data">
+		<cfargument name="output" required="false" default="xml">
+		<cfargument name="mac" required="false" default="">
 
+			<cfset data = structnew()>
+			<cfset data.mac = UCASE(arguments.mac) />
+            <cfset data.added = now()>
+        	<cfset data.device_id = application.DataMgr.insertRecord("devices",data)> 
+       
+	
+			<cfswitch expression="#arguments.output#">
+				<cfcase value="xml">
+				<cfcontent type="text/xml">
+				<cfreturn this.ajaxdata.returnSuccessXML(data.device_id) />	
+				</cfcase>
+				<cfcase value="json">
+				<cfcontent type="text/html">
+				<cfreturn this.ajaxdata.returnSuccessJSON(data.device_id) />				
+				</cfcase>		
+			</cfswitch>
+
+	</cffunction>    
+
+
+	<!--- Saves Speed Test From Specific Unit --->	
+ 	<cffunction name="removeDevice" access="remote" output="no" returntype="any" hint="Saves Speed Test Data">
+		<cfargument name="output" required="false" default="xml">
+		<cfargument name="mac" required="false" default="">
+
+        <cfquery name="device" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
+		SELECT * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.mac#">
+		</cfquery>
+
+       
+	
+			<cfswitch expression="#arguments.output#">
+				<cfcase value="xml">
+				<cfcontent type="text/xml">
+				<cfreturn this.ajaxdata.returnSuccessXML(data.device_id) />	
+				</cfcase>
+				<cfcase value="json">
+				<cfcontent type="text/html">
+				<cfreturn this.ajaxdata.returnSuccessJSON(data.device_id) />				
+				</cfcase>		
+			</cfswitch>
+
+	</cffunction> 
 
 	<!--- Saves Speed Test From Specific Unit --->	
  	<cffunction name="saveTest" access="remote" output="no" returntype="any" hint="Saves Speed Test Data">
@@ -79,8 +128,8 @@
 				</cfcase>		
 			</cfswitch>
             <cfelse>
-            
-            
+            	<cfcontent type="text/html">
+				<cfreturn "<h1>Unauthorized Access</h1>" />            
             </cfif>
 
 	</cffunction>
@@ -134,6 +183,7 @@
  				<table name="devices">
 					<field ColumnName="device_id" CF_DataType="CF_SQL_INTEGER" PrimaryKey="true" Increment="true" AllowNulls="true" />
 					<field ColumnName="mac" CF_DataType="CF_SQL_VARCHAR" Length="200" AllowNulls="true" />
+                    <field ColumnName="added" CF_DataType="CF_SQL_TIMESTAMP" Length="200" AllowNulls="true" />
 				</table>                
                                                                         
             </tables>
