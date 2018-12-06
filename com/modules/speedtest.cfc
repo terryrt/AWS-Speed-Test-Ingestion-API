@@ -91,6 +91,31 @@
 			</cfswitch>
 
 	</cffunction> 
+    
+	<!--- Clear Test Data --->	
+ 	<cffunction name="clearTests" access="remote" output="no" returntype="any" hint="Removes Speed Test Device">
+		<cfargument name="output" required="false" default="xml">
+		<cfargument name="mac" required="false" default="">
+		<cfset device = getDeviceByMac("query",UCASE(arguments.mac) />
+        <cfquery name="cleartests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
+		DELETE * FROM speedtests WHERE device_id = <cfqueryparam cfsqltype="cf_sql_varchar" value="#device.device_id#">
+		</cfquery>
+
+       
+	
+			<cfswitch expression="#arguments.output#">
+				<cfcase value="xml">
+				<cfcontent type="text/xml">
+				<cfreturn this.ajaxdata.returnSuccessXML(1) />	
+				</cfcase>
+				<cfcase value="json">
+				<cfcontent type="text/html">
+				<cfreturn this.ajaxdata.returnSuccessJSON(1) />				
+				</cfcase>		
+			</cfswitch>
+
+	</cffunction>     
+    
 
 	<!--- Saves Speed Test From Specific Unit --->	
  	<cffunction name="saveTest" access="remote" output="no" returntype="any" hint="Saves Speed Test Data">
