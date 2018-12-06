@@ -96,7 +96,9 @@
  	<cffunction name="clearTests" access="remote" output="no" returntype="any" hint="Removes Speed Test Device">
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
+        
 		<cfset device = getDeviceByMac("query",UCASE(arguments.mac) />
+        
         <cfquery name="cleartests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
 		DELETE * FROM speedtests WHERE device_id = <cfqueryparam cfsqltype="cf_sql_varchar" value="#device.device_id#">
 		</cfquery>
@@ -192,7 +194,61 @@
 		</cfswitch>	
 	</cffunction>    
  
-
+	<!--- Get All Speed Tests Results in the DB --->    
+	<cffunction name="getAllSpeedTests" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+		<cfargument name="output" required="false" default="query">
+		
+        <cfquery name="tests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
+		SELECT device.mac, speedtests* FROM speedtests WHERE device.device_id = speedtests.device_id ORDER by posted DESC;
+		</cfquery>
+        
+		<cfswitch expression="#arguments.output#">
+			<cfcase value="query">
+			<cfreturn tests />
+			</cfcase>
+			<cfcase value="xml">
+			<cfset this.ajaxdata.init(tests)>
+			<cfcontent type="text/xml">
+			<cfreturn this.ajaxdata.returnXML() />
+			</cfcase>
+			<cfcase value="json">
+			<cfset this.ajaxdata.init(tests)>
+			<cfcontent type="text/html">
+			<cfreturn this.ajaxdata.returnJSON() />				
+			</cfcase>
+		</cfswitch>	
+	</cffunction>
+    
+	<!--- Get All Speed Tests Results by a given date range --->    
+	<cffunction name="getSpeedTestsByDate" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+		<cfargument name="output" required="false" default="query">
+		<cfargument name="start" required="false" default="">
+        <cfargument name="end" required="false" default="">
+	
+        <cfquery name="tests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
+		SELECT device.mac, speedtests* FROM speedtests WHERE device.device_id = speedtests.device_id 
+        AND taken BETWEEN <cfqueryparam cfsqltype="cf_sql_date" value="#arguments.start#"> AND <cfqueryparam cfsqltype="cf_sql_date" value="#arguments.end#">
+        ORDER by posted DESC;
+		</cfquery>
+        
+		<cfswitch expression="#arguments.output#">
+			<cfcase value="query">
+			<cfreturn tests />
+			</cfcase>
+			<cfcase value="xml">
+			<cfset this.ajaxdata.init(tests)>
+			<cfcontent type="text/xml">
+			<cfreturn this.ajaxdata.returnXML() />
+			</cfcase>
+			<cfcase value="json">
+			<cfset this.ajaxdata.init(tests)>
+			<cfcontent type="text/html">
+			<cfreturn this.ajaxdata.returnJSON() />				
+			</cfcase>
+		</cfswitch>	
+	</cffunction>
+    
+        
     <cffunction name="manageTables" access="private" returntype="any">
     	<cfsavecontent variable="tbls">
         	<tables>
