@@ -22,7 +22,7 @@
 		<cfargument name="mac" required="false" default="">
 
         <cfquery name="device" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
-		SELECT * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.mac#">
+		SELECT * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#UCASE(arguments.mac)#">
 		</cfquery>
 
 		<cfswitch expression="#arguments.output#">
@@ -68,13 +68,13 @@
 	</cffunction>    
 
 
-	<!--- Saves Speed Test From Specific Unit --->	
+	<!--- Saves Device --->	
  	<cffunction name="removeDevice" access="remote" output="no" returntype="any" hint="Removes Speed Test Device">
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
 
         <cfquery name="device" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
-		DELETE * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.mac#">
+		DELETE * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#UCASE(arguments.mac)#">
 		</cfquery>
 
        
@@ -101,6 +101,7 @@
 		<cfargument name="latency" required="false" default="">
         <cfargument name="taken" required="false" default="">
         <cfargument name="test_server" required="false" default="">
+        <cfargument name="ip" required="false" default="">
 
 		<cfset sdevice = getDeviceByMac("query",arguments.mac) />
 		<cfif sdevice.recordcount GT 0>
@@ -111,6 +112,7 @@
             <cfset data.latency = arguments.latency>
             <cfset data.test_server = arguments.test_server>
             <cfset data.taken = arguments.taken>
+            <cfset data.ip = arguments.ip>
             <cfset data.posted = now()>
 
 
@@ -132,7 +134,7 @@
 				<cfreturn "<h1>Unauthorized Access</h1>" />            
             </cfif>
 
-	</cffunction>
+	</cffunction><li></li>
     
 	<!--- Get All Speed Tests For a Given Mac Address --->    
 	<cffunction name="getSpeedTestByMac" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
@@ -140,7 +142,7 @@
 		<cfargument name="mac" required="false" default="">
 
         <cfquery name="device" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
-		SELECT * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.mac#">
+		SELECT * FROM devices WHERE mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#UCASE(arguments.mac)#">
 		</cfquery>
 
 		
@@ -178,6 +180,7 @@
                     <field ColumnName="taken" CF_DataType="CF_SQL_Date" AllowNulls="true" />
                     <field ColumnName="test_server" CF_DataType="CF_SQL_VARCHAR" Length="200" AllowNulls="true" />
                     <field ColumnName="posted" CF_DataType="CF_SQL_TIMESTAMP" AllowNulls="true" />
+                    <field ColumnName="ip" CF_DataType="CF_SQL_VARCHAR" Length="200" AllowNulls="true" />
 				</table>  
                 
  				<table name="devices">
