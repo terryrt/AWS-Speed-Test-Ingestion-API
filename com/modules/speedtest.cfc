@@ -97,7 +97,7 @@
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
         
-		<cfset device = getDeviceByMac("query",UCASE(arguments.mac) />
+		<cfset device = getDeviceByMac("query",UCASE(arguments.mac)) />
         
         <cfquery name="cleartests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
 		DELETE * FROM speedtests WHERE device_id = <cfqueryparam cfsqltype="cf_sql_varchar" value="#device.device_id#">
@@ -199,7 +199,7 @@
 		<cfargument name="output" required="false" default="query">
 		
         <cfquery name="tests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
-		SELECT device.mac, speedtests* FROM speedtests WHERE device.device_id = speedtests.device_id ORDER by posted DESC;
+		SELECT devices.mac, speedtests* FROM devices, speedtests WHERE devices.device_id = speedtests.device_id ORDER by posted DESC;
 		</cfquery>
         
 		<cfswitch expression="#arguments.output#">
@@ -226,7 +226,7 @@
         <cfargument name="end" required="false" default="">
 	
         <cfquery name="tests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
-		SELECT device.mac, speedtests* FROM speedtests WHERE device.device_id = speedtests.device_id 
+		SELECT devices.mac, speedtests* FROM devices, speedtests WHERE devices.device_id = speedtests.device_id 
         AND taken BETWEEN <cfqueryparam cfsqltype="cf_sql_date" value="#arguments.start#"> AND <cfqueryparam cfsqltype="cf_sql_date" value="#arguments.end#">
         ORDER by posted DESC;
 		</cfquery>
@@ -248,7 +248,33 @@
 		</cfswitch>	
 	</cffunction>
     
+ 	<!--- Get All Speed Tests Results by a given date range --->    
+	<cffunction name="getSpeedTestStats" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+		<cfargument name="output" required="false" default="query">
+		<cfargument name="mac" required="false" default="">
+	
+        <cfquery name="tests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
+		SELECT devices.mac, COUNT(speedtests.test_id) AS total, AVG(speedtests.upstream) as avgup, AVG(speedtests.downstream) as avgdwn, AVG(speedtests.latency) as avglat, MAX(speedtests.taken) as last FROM devices,speedtests WHERE devices.device_id = speedtests.device_id 
+        AND devices.mac = <cfqueryparam cfsqltype="cf_sql_varchar" value="#UCASE(arguments.mac)#"> 
+        ORDER by posted DESC;
+		</cfquery>
         
+		<cfswitch expression="#arguments.output#">
+			<cfcase value="query">
+			<cfreturn tests />
+			</cfcase>
+			<cfcase value="xml">
+			<cfset this.ajaxdata.init(tests)>
+			<cfcontent type="text/xml">
+			<cfreturn this.ajaxdata.returnXML() />
+			</cfcase>
+			<cfcase value="json">
+			<cfset this.ajaxdata.init(tests)>
+			<cfcontent type="text/html">
+			<cfreturn this.ajaxdata.returnJSON() />				
+			</cfcase>
+		</cfswitch>	
+	</cffunction>       
     <cffunction name="manageTables" access="private" returntype="any">
     	<cfsavecontent variable="tbls">
         	<tables>
