@@ -48,6 +48,9 @@
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
 
+		<cfset device = getDeviceByMac("query",UCASE(arguments.mac)) />
+        <cfif device.recordcount GT 0>	
+
 			<cfset data = structnew()>
 			<cfset data.mac = UCASE(arguments.mac) />
             <cfset data.added = now()>
@@ -64,6 +67,34 @@
 				<cfreturn this.ajaxdata.returnSuccessJSON(data.device_id) />				
 				</cfcase>		
 			</cfswitch>
+            
+        <cfelse>
+        
+		<!--- create a query attribute to house errors as they occurr ---> 
+    	<cfset errorQuery = querynew('id, msg', 'varchar, varchar')>
+
+      		<cfset QueryAddRow(errorQuery)>
+        	<cfset QuerySetCell(errorQuery,'id','mac')>
+        	<cfset QuerySetCell(errorQuery,'msg','This Mac Address Already Exists In The Database')>        
+
+			<cfswitch expression="#arguments.output#">
+				<cfcase value="query">
+				<cfreturn errorQuery />
+				</cfcase>            
+				<cfcase value="xml">
+				<cfset this.ajaxdata.init(errorQuery)>
+				<cfcontent type="text/xml">
+				<cfreturn this.ajaxdata.returnErrorXML() />
+				</cfcase>
+				<cfcase value="json">
+				<cfset this.ajaxdata.init(errorQuery)>
+				<cfcontent type="text/html">
+				<cfreturn this.ajaxdata.returnErrorJSON() />				
+				</cfcase>
+			</cfswitch>
+	        
+        
+        </cfif>
 
 	</cffunction>    
 
