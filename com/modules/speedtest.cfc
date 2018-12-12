@@ -17,7 +17,7 @@
 
 
 	<!--- Get Device ID By Mac --->    
-	<cffunction name="getDeviceByMac" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+	<cffunction name="getDeviceByMac" returntype="any" access="remote" output="no" hint="Gets Device ID By Mac">
 		<cfargument name="output" required="false" default="query">
 		<cfargument name="mac" required="false" default="">
 
@@ -93,7 +93,7 @@
 	</cffunction> 
     
 	<!--- Clear Test Data --->	
- 	<cffunction name="clearTests" access="remote" output="no" returntype="any" hint="Removes Speed Test Device">
+ 	<cffunction name="clearTests" access="remote" output="no" returntype="any" hint="Clears Speed Test Results For A Given Device">
 		<cfargument name="output" required="false" default="xml">
 		<cfargument name="mac" required="false" default="">
         
@@ -195,7 +195,7 @@
 	</cffunction>    
  
 	<!--- Get All Speed Tests Results in the DB --->    
-	<cffunction name="getAllSpeedTests" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+	<cffunction name="getAllSpeedTests" returntype="any" access="remote" output="no" hint="Get All Speed Tests Results in the DB">
 		<cfargument name="output" required="false" default="query">
 		
         <cfquery name="tests" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
@@ -220,7 +220,7 @@
 	</cffunction>
     
 	<!--- Get All Speed Tests Results by a given date range --->    
-	<cffunction name="getSpeedTestsByDate" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+	<cffunction name="getSpeedTestsByDate" returntype="any" access="remote" output="no" hint="Get All Speed Tests Results by a given date range">
 		<cfargument name="output" required="false" default="query">
 		<cfargument name="start" required="false" default="">
         <cfargument name="end" required="false" default="">
@@ -248,8 +248,8 @@
 		</cfswitch>	
 	</cffunction>
     
- 	<!--- Get All Speed Tests Results by a given date range --->    
-	<cffunction name="getSpeedTestStats" returntype="any" access="remote" output="no" hint="Gets All Speed Tests For A Given Mac Address">
+ 	<!--- Gets Speed Test Statistics For A Given Mac Address --->    
+	<cffunction name="getSpeedTestStats" returntype="any" access="remote" output="no" hint="Gets Speed Test Statistics For A Given Mac Address">
 		<cfargument name="output" required="false" default="query">
 		<cfargument name="mac" required="false" default="">
 	
@@ -275,6 +275,39 @@
 			</cfcase>
 		</cfswitch>	
 	</cffunction>       
+    
+ 	<!--- Get All Devices Along With Their Latest Speed Tests --->    
+	<cffunction name="getDevicesLatest" returntype="any" access="remote" output="no" hint="Gets All Devices Along With Their Latest Speed Test">
+		<cfargument name="output" required="false" default="query">
+		<cfargument name="mac" required="false" default="">
+	
+        <cfquery name="devices" datasource="#application.db.source#" username="#application.db.user#" password="#application.db.pass#">
+			SELECT A.mac, A.downstream, A.Upstream, A.latency, A.ip, A.taken
+            	FROM
+                (SELECT B.mac, C.downstream, C.Upstream, C.latency, C.ip, C.taken
+                 FROM devices B LEFT OUTER JOIN speedtests C ON B.device_ID = C.device_id
+                 ORDER BY C.taken DESC) AS A
+            GROUP BY A.mac
+
+		</cfquery>
+        
+		<cfswitch expression="#arguments.output#">
+			<cfcase value="query">
+			<cfreturn devices />
+			</cfcase>
+			<cfcase value="xml">
+			<cfset this.ajaxdata.init(devices)>
+			<cfcontent type="text/xml">
+			<cfreturn this.ajaxdata.returnXML() />
+			</cfcase>
+			<cfcase value="json">
+			<cfset this.ajaxdata.init(devices)>
+			<cfcontent type="text/html">
+			<cfreturn this.ajaxdata.returnJSON() />				
+			</cfcase>
+		</cfswitch>	
+	</cffunction>       
+    
     <cffunction name="manageTables" access="private" returntype="any">
     	<cfsavecontent variable="tbls">
         	<tables>
